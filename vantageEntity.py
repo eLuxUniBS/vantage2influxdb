@@ -3,6 +3,7 @@ import datetime as dt
 import pytz
 from PyWeather.weather.units import *
 
+
 class VantageMeasure(object):
     def __init__(self, archiveRecord):
         filters = {
@@ -83,11 +84,19 @@ class VantageMeasure(object):
         json_body["fields"] = fields
         return json_body
 
-############################ FILTER IMPLEMENTATION ###############################
-    def setFinC(self, measure, value):
+    ############################ FILTER IMPLEMENTATION ###############################
+    def set_FinC(self, measure, value):
         '''
         Add the measure in fahrenheit to the object as celsius value
         :param measure: the name of the measure
         :param value: the temperature int fahrenheit
         '''
         self.addParameter(measure, fahrenheit_to_celsius(value))
+
+    def set_minHg_in_Pa(self, measure, value):
+        '''
+        Add the measure in milliinches of Hg to the object as Pascal value
+        :param measure: the name of the measure
+        :param value: the pressure in milli-inches of Hg
+        '''
+        self.addParameter(measure, incConv_to_Pa(value * 1000))
