@@ -49,6 +49,7 @@ if __name__ == '__main__':
         try:
             while not stationConnected:
                 console = VantagePro(IP, PORT, ARCHIVE_INTERVAL)
+                console.setTime(console)
                 print "console connected. Getting last records..."
                 result = client.query('select * from ' + MEASURE_NAME + ' order by time DESC limit 1')
                 try:
@@ -66,14 +67,6 @@ if __name__ == '__main__':
                     logging.warning("downlaod all the points")
                     ts = None
                 stationConnected = True
-            # get currente datetime truncated to milliseconds
-            # now = dt.datetime.now()
-            # consoleTime = console.getTime()
-            # print('console time: ' + consoleTime.isoformat())
-            # if consoleTime.isoformat() is not now.isoformat()[:-3]:
-            #     logging.warning('time delta: '+str(now-consoleTime) + ' fix time!')
-            #     console.setTime(dt.datetime.now())
-            # logging.debug("archiveTime: " + str(console._archive_time))
             console.parse()
             # logging.warning(console.fields.__len__())
             # save data to influxdb using
@@ -98,3 +91,13 @@ if __name__ == '__main__':
         except socket.error as e:
             logging.error("Connection lost " + e.message)
             stationConnected = False
+
+        def setConsoleTime(console):
+            consoleTime = console.getTime()
+            # get currente datetime truncated to milliseconds
+            now = dt.datetime.now()
+            print('console time: ' + consoleTime.isoformat())
+            if consoleTime.isoformat() is not now.isoformat()[:-3]:
+                logging.warning('time delta: '+str(now-consoleTime) + ' fix time!')
+                console.setTime(dt.datetime.now())
+            logging.debug("archiveTime: " + str(console._archive_time))
