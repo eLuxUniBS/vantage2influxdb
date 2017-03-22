@@ -37,6 +37,17 @@ DBNAME = 'example'
 MEASURE_NAME = 'Vantage'
 LOCAL_TZ = pytz.timezone('Europe/Rome')
 
+
+def setConsoleTime(console):
+    consoleTime = console.getTime()
+    # get currente datetime truncated to milliseconds
+    now = dt.datetime.now()
+    print('console time: ' + consoleTime.isoformat())
+    if consoleTime.isoformat() is not now.isoformat()[:-3]:
+        logging.warning('time delta: ' + str(now - consoleTime) + ' fix time!')
+        console.setTime(dt.datetime.now())
+    logging.debug("archiveTime: " + str(console._archive_time))
+
 if __name__ == '__main__':
     print("Connect to Console " + IP + " on port " + str(PORT))
     client = InfluxDBClient(DBHOST, DBPORT, DBUID, DBPSWD, DBNAME)
@@ -90,6 +101,7 @@ if __name__ == '__main__':
             stationConnected = False
         except socket.error as e:
             logging.error("Connection lost " + e.message)
+<<<<<<< HEAD
             stationConnected = False
 
         def setConsoleTime(console):
@@ -101,3 +113,6 @@ if __name__ == '__main__':
                 logging.warning('time delta: '+str(now-consoleTime) + ' fix time!')
                 console.setTime(dt.datetime.now())
             logging.debug("archiveTime: " + str(console._archive_time))
+=======
+            stationConnected = False
+>>>>>>> cfee725524a984f429ab9354fce7ec12c5751836
