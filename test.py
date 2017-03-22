@@ -49,7 +49,7 @@ if __name__ == '__main__':
         try:
             while not stationConnected:
                 console = VantagePro(IP, PORT, ARCHIVE_INTERVAL)
-                console.setTime(console)
+                setConsoleTime(console)
                 print "console connected. Getting last records..."
                 result = client.query('select * from ' + MEASURE_NAME + ' order by time DESC limit 1')
                 try:
