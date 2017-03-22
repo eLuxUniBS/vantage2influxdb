@@ -35,7 +35,7 @@ DBUID = 'root'
 DBPSWD = 'root'
 DBNAME = 'example'
 MEASURE_NAME = 'Vantage'
-LOCAL_TZ = 'Europe/Rome'
+LOCAL_TZ = pytz.timezone('Europe/Rome')
 
 if __name__ == '__main__':
     print("Connect to Console " + IP + " on port " + str(PORT))
@@ -57,9 +57,8 @@ if __name__ == '__main__':
                     # set the archive time to 10 min ago
                     # ts = dt.datetime.now() - dt.timedelta(minutes=5)
                     ts = duParser.parse(record)
-                    logging.debug("archived last ts=" + ts.isoformat() + str(ts.tzinfo))
-                    ts = ts.astimezone(pytz.timezone(LOCAL_TZ))
-                    logging.debug(ts.isoformat() + str(ts.tzinfo))
+                    ts = ts+LOCAL_TZ #from UTC in the database to localzone of the console
+                    logging.warning("archived last ts=" + ts.isoformat() + str(ts.tzinfo))
                     console.setArchiveTime(ts)
                     logging.warning(
                         "Get records from " + str(ts.year) + "/" + str(ts.month) + "/" + str(ts.day) + " " + str(
@@ -81,8 +80,8 @@ if __name__ == '__main__':
             # save data to influxdb using
             json = []
             for record in console.fields:
-                entity = vantageEntity.VantageMeasure(record)
-                json.append(entity.jsonify('Europe/Rome', MEASURE_NAME))
+                entity = vantageEntity.VantageMeasure(record,LOCAL_TZ)
+                json.append(entity.jsonify(MEASURE_NAME))
                 logging.debug(str(json.__len__()) + " record added to JSON")
             client.write_points(json)
             logging.warning(str(json.__len__()) + " data saved")
