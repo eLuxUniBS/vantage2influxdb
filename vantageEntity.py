@@ -13,7 +13,7 @@ class VantageMeasure(object):
         '''
         # see the PyWeather davis_weatherLinkIP module for details about fields
         filters = {
-            'TempOut': self._set_dF_in_C,
+            'TempOut': self._set_FinC,
             'TempOutHi': self._set_FinC,
             'TempOutLow': self._set_FinC,
             'RainRate': self._set_rain_in_mm,

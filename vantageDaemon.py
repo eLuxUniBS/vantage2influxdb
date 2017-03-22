@@ -16,7 +16,7 @@ logfile = "readings.log"
 # Initialize the logging into the file defined by the logfile variable, set the verbose level of the logging and define
 # the header string int he format datetime - debug level - message.
 logging.basicConfig(
-#    filename=logfile,
+    filename=logfile,
     level=logging.WARNING,
     # level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s'
@@ -45,7 +45,7 @@ def setConsoleTime(console):
     print('console time: ' + consoleTime.isoformat())
     if consoleTime.isoformat() is not now.isoformat()[:-3]:
         logging.warning('time delta: ' + str(now - consoleTime) + ' fix time!')
-        console.setTime(dt.datetime.now())
+        #console.setTime(dt.datetime.now())
     logging.debug("archiveTime: " + str(console._archive_time))
 
 if __name__ == '__main__':
@@ -101,18 +101,4 @@ if __name__ == '__main__':
             stationConnected = False
         except socket.error as e:
             logging.error("Connection lost " + e.message)
-<<<<<<< HEAD
             stationConnected = False
-
-        def setConsoleTime(console):
-            consoleTime = console.getTime()
-            # get currente datetime truncated to milliseconds
-            now = dt.datetime.now()
-            print('console time: ' + consoleTime.isoformat())
-            if consoleTime.isoformat() is not now.isoformat()[:-3]:
-                logging.warning('time delta: '+str(now-consoleTime) + ' fix time!')
-                console.setTime(dt.datetime.now())
-            logging.debug("archiveTime: " + str(console._archive_time))
-=======
-            stationConnected = False
->>>>>>> cfee725524a984f429ab9354fce7ec12c5751836
