@@ -16,7 +16,7 @@ logfile = "readings.log"
 # Initialize the logging into the file defined by the logfile variable, set the verbose level of the logging and define
 # the header string int he format datetime - debug level - message.
 logging.basicConfig(
-    filename=logfile,
+#    filename=logfile,
     level=logging.WARNING,
     # level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s'
@@ -57,14 +57,13 @@ if __name__ == '__main__':
                     # set the archive time to 10 min ago
                     # ts = dt.datetime.now() - dt.timedelta(minutes=5)
                     ts = duParser.parse(record)
-                    ts = ts+LOCAL_TZ #from UTC in the database to localzone of the console
-                    logging.warning("archived last ts=" + ts.isoformat() + str(ts.tzinfo))
+                    print ts.isoformat()
+                    ts = ts.astimezone(LOCAL_TZ) #from UTC in the database to localzone of the console
+                    logging.warning("get records from: " + ts.isoformat() + str(ts.tzinfo))
                     console.setArchiveTime(ts)
-                    logging.warning(
-                        "Get records from " + str(ts.year) + "/" + str(ts.month) + "/" + str(ts.day) + " " + str(
-                            ts.hour) + ":" + str(ts.minute))
                 except IndexError as e:
                     # download all the records in console
+                    logging.warning("downlaod all the points")
                     ts = None
                 stationConnected = True
             # get currente datetime truncated to milliseconds
