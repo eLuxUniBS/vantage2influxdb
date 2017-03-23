@@ -1,4 +1,4 @@
-import vantageEntity
+from vantageEntity import VantageMeasure
 from PyWeather.weather.stations.davis_weatherLinkIP import *
 import datetime as dt
 from dateutil import parser as duParser
@@ -34,7 +34,7 @@ DBPORT = 8086
 DBUID = 'root'
 DBPSWD = 'root'
 DBNAME = 'example'
-MEASURE_NAME = 'Vantage'
+MEASURE_NAME = 'auto'
 LOCAL_TZ = pytz.timezone('Europe/Rome')
 
 
@@ -45,8 +45,9 @@ def setConsoleTime(console):
     print('console time: ' + consoleTime.isoformat())
     if consoleTime.isoformat() is not now.isoformat()[:-3]:
         logging.warning('time delta: ' + str(now - consoleTime) + ' fix time!')
-        #console.setTime(dt.datetime.now())
+        # console.setTime(dt.datetime.now())
     logging.debug("archiveTime: " + str(console._archive_time))
+
 
 if __name__ == '__main__':
     print("Connect to Console " + IP + " on port " + str(PORT))
@@ -70,7 +71,7 @@ if __name__ == '__main__':
                     # ts = dt.datetime.now() - dt.timedelta(minutes=5)
                     ts = duParser.parse(record)
                     print ts.isoformat()
-                    ts = ts.astimezone(LOCAL_TZ) #from UTC in the database to localzone of the console
+                    ts = ts.astimezone(LOCAL_TZ)  # from UTC in the database to localzone of the console
                     logging.warning("get records from: " + ts.isoformat() + str(ts.tzinfo))
                     console.setArchiveTime(ts)
                 except IndexError as e:
@@ -79,12 +80,14 @@ if __name__ == '__main__':
                     ts = None
                 stationConnected = True
             console.parse()
-            # logging.warning(console.fields.__len__())
-            # save data to influxdb using
+            # save data to influxdb using the single measurement feature
             json = []
             for record in console.fields:
-                entity = vantageEntity.VantageMeasure(record,LOCAL_TZ)
-                json.append(entity.jsonify(MEASURE_NAME))
+                entity = VantageMeasure(record, LOCAL_TZ)
+                if MEASURE_NAME == 'auto' or MEASURE_NAME == 'Auto':
+                    json.extend(entity.jsonify_by_row())
+                else:
+                    json.append(entity.jsonify(MEASURE_NAME))
                 logging.debug(str(json.__len__()) + " record added to JSON")
             client.write_points(json)
             logging.warning(str(json.__len__()) + " data saved")

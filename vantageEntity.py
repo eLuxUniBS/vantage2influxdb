@@ -92,6 +92,19 @@ class VantageMeasure(object):
         json_body["fields"] = fields
         return json_body
 
+    def jsonify_by_row(self):
+        records = []
+        for attribute, value in self.__dict__.iteritems():
+            json_body = {}
+            fields = {}
+            if attribute != 'time':
+                json_body['measurement'] = attribute
+                json_body['time'] = self.time.isoformat()
+                fields['value'] = value
+                json_body['fields'] = fields
+                records.append(json_body)
+        return records
+
     ############################ FILTER IMPLEMENTATION ###############################
     def _set_FinC(self, measure, value):
         '''
