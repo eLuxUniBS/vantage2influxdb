@@ -18,7 +18,7 @@ logfile = "readings.log"
 logging.basicConfig(
     filename=logfile,
     level=logging.WARNING,
-    # level=logging.DEBUG,
+    #level=logging.DEBUG,
     format='%(asctime)s - %(levelname)s - %(message)s'
 )
 
@@ -33,7 +33,7 @@ DBHOST = 'localhost'
 DBPORT = 8086
 DBUID = 'root'
 DBPSWD = 'root'
-DBNAME = 'example'
+DBNAME = 'examplerow'
 MEASURE_NAME = 'auto'
 LOCAL_TZ = pytz.timezone('Europe/Rome')
 
@@ -62,15 +62,18 @@ if __name__ == '__main__':
             while not stationConnected:
                 console = VantagePro(IP, PORT, ARCHIVE_INTERVAL)
                 setConsoleTime(console)
-                print "console connected. Getting last records..."
-                result = client.query('select * from ' + MEASURE_NAME + ' order by time DESC limit 1')
+                logging.warning("console connected. Getting last records...")
+                if MEASURE_NAME == 'auto' or MEASURE_NAME == 'Auto':
+                    result = client.query('select * from Barometer order by time DESC limit 1')
+                else:
+                    result = client.query('select * from ' + MEASURE_NAME + ' order by time DESC limit 1')
                 try:
                     # parse the last record and retrieve the ts
                     record = result.items()[0][1].next()['time']
                     # set the archive time to 10 min ago
                     # ts = dt.datetime.now() - dt.timedelta(minutes=5)
                     ts = duParser.parse(record)
-                    print ts.isoformat()
+                    # print ts.isoformat()
                     ts = ts.astimezone(LOCAL_TZ)  # from UTC in the database to localzone of the console
                     logging.warning("get records from: " + ts.isoformat() + str(ts.tzinfo))
                     console.setArchiveTime(ts)
@@ -85,23 +88,25 @@ if __name__ == '__main__':
             for record in console.fields:
                 entity = VantageMeasure(record, LOCAL_TZ)
                 if MEASURE_NAME == 'auto' or MEASURE_NAME == 'Auto':
+                    # save as multiple measurements, one for parameter
                     json.extend(entity.jsonify_by_row())
                 else:
+                    # save as a single measure with one field for parameter
                     json.append(entity.jsonify(MEASURE_NAME))
                 logging.debug(str(json.__len__()) + " record added to JSON")
             client.write_points(json)
-            logging.warning(str(json.__len__()) + " data saved")
+            # logging.warning(str(json.__len__()) + " data saved")
             sleepSec = 60 - dt.datetime.now().second
-            logging.debug("waiting the end of minute for " + str(sleepSec) + " sec")
+            logging.info("waiting the end of minute for " + str(sleepSec) + " sec")
             time.sleep(sleepSec)
             while (dt.datetime.now().minute % 5) != 0:
                 sleepSec = 60 - dt.datetime.now().second
-                logging.debug("sleep for " + str(sleepSec) + " sec")
+                logging.info("sleep for " + str(sleepSec) + " sec")
                 time.sleep(sleepSec)
         except NoDeviceException as e:
             logging.error("Console connection lost waiting a minute and retry... " + e.message)
             time.sleep(60)
             stationConnected = False
         except socket.error as e:
-            logging.error("Connection lost " + e.message)
+            logging.error("Network Connection lost " + e.message + ' retry')
             stationConnected = False

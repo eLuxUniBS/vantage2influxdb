@@ -55,7 +55,12 @@ class VantageMeasure(object):
         }
         # populate the object with all the parameters in archive record using the suitable filters
         for measure, value in archiveRecord.iteritems():
-            filters[measure](measure, value)
+            try:
+                filters[measure](measure, value)
+            except KeyError:
+                logging.error("No data filter found, parameter " + measure + ' added without elaboration')
+                # self._addParameter(measure, value)
+                self._set_FinC(measure, value)
         # compress Year, Month, Day, Minute into the time attribute as
         time = dt.datetime(self.Year, self.Month, self.Day, self.Hour, self.Min)
         self.time = timezone.localize(time)
@@ -86,7 +91,7 @@ class VantageMeasure(object):
                 # add the unix timestamp to the influxdb json
                 time = value.astimezone(pytz.timezone('UTC'))
                 json_body["time"] = time.isoformat()
-                print('record time = ', time.isoformat(), time.tzinfo)
+                logging.warning('record time = ', time.isoformat(), time.tzinfo)
             else:
                 fields[attribute] = value
         json_body["fields"] = fields
@@ -94,6 +99,7 @@ class VantageMeasure(object):
 
     def jsonify_by_row(self):
         records = []
+        logging.warning(self.time.isoformat() + ' ' + str(self.time.tzinfo))
         for attribute, value in self.__dict__.iteritems():
             json_body = {}
             fields = {}
