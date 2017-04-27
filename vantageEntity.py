@@ -22,8 +22,8 @@ class VantageMeasure(object):
             'SolarRad': self._addParameter,  # Average Solar Rad over the archive period. Units are (Watts / m 2 )
             'WindSamps': self._skipValue,
             'TempIn': self._set_FinC,
-            'HumIn': self._set_in_percent,
-            'HumOut': self._set_in_percent,
+            'HumIn': self._addParameter,
+            'HumOut': self._addParameter, 
             'WindAvg': self._set_mph_in_mps,
             'WindHi': self._set_mph_in_mps,
             'WindHiDir': self._winDir_in_Deg,
@@ -53,12 +53,41 @@ class VantageMeasure(object):
             'TimeStamp': self._skipValue,
             'DateStampUtc': self._addParameter
         }
+        dbNames = {
+            'DateStampUtc': 'DB_TimeStamp_UTC',
+            'Barometer': 'AtmosphericPressure',
+            'DewPointDavis': 'DewPoint',
+            'ETHour': 'EvapoTranspiration',
+            'HeatIndex': 'HeatIndex',
+            'WindChill': 'WindChill',
+            'HumOut': 'RelativeHumidity',
+            'HumIn': 'RelativeHumidity_ConsoleRoom',
+            'WindAvg': 'WindSpeed_Average',
+            'WindHi': 'WindSpeed_Gust',
+            'TempOut': 'AmbientTemperature',
+            'TempIn': 'AmbientTemperature_ConsoleRoom',
+            'RainRate': 'RainRate',
+            'RainRateHi': 'RainRate_Max',
+            'SolarRad': 'SolarIrradiance',
+            'SolarRadHi': 'SolarIrradiance_Max',
+            'TempOutHi': 'AmbientTemperature_Max',
+            'TempOutLow': 'AmbientTemperature_Min',
+            'UV': 'UVIndex',
+            'UVHi': 'UVIndex_Max',
+            'WindAvgDir': 'WindDirection_Average',
+            'WindHiDir': 'WindDirection_Gust'
+        }
         # populate the object with all the parameters in archive record using the suitable filters
         for measure, value in archiveRecord.iteritems():
             try:
-                filters[measure](measure, value)
+                measureDB = dbNames[measure]
             except KeyError:
-                logging.error("No data filter found, parameter " + measure + ' added without elaboration')
+                print('name change error ',measure)
+                measureDB = measure
+            try:
+                filters[measure](measureDB, value)
+            except KeyError:
+                logging.warning("No data filter found, parameter " + measure + ' added without elaboration')
                 # self._addParameter(measure, value)
                 self._set_FinC(measure, value)
         # compress Year, Month, Day, Minute into the time attribute as
@@ -166,7 +195,12 @@ class VantageMeasure(object):
         :param value: value in mph
         :return: add a parameter with name measure and value "value" in m/s to the object
         '''
-        self._addParameter(measure, mph_to_m_sec(value))
+        logging.error(measure+' '+str(value))
+        if value == 255:
+            # self._addParameter(measure, 300)
+            pass
+        else:
+            self._addParameter(measure, mph_to_m_sec(value))
 
     def _winDir_in_Deg(self, measure, value):
         '''
@@ -175,7 +209,11 @@ class VantageMeasure(object):
         :param value: value to be converted using the vantage wind direction protocol. See Davis serial protocol documentation.
         :return: add a parameter with name measure and value "value" in degrees to the object
         '''
-        self._addParameter(measure, value * 22.5)
+        if value == 255:
+            # self._addParameter(measure, None)
+            pass
+        else:
+            self._addParameter(measure, value * 22.5)
 
     def _set_milliin_in_mm(self, measure, value):
         '''

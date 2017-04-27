@@ -44,7 +44,7 @@ def setConsoleTime(console):
     now = dt.datetime.now()
     print('console time: ' + consoleTime.isoformat())
     if consoleTime.isoformat() is not now.isoformat()[:-3]:
-        logging.warning('time delta: ' + str(now - consoleTime) + ' fix time!')
+        logging.warning('time delta: ' + str(now - consoleTime) + ' fix time! '+now.isoformat()+' '+consoleTime.isoformat())
         # console.setTime(dt.datetime.now())
     logging.debug("archiveTime: " + str(console._archive_time))
 
@@ -61,7 +61,7 @@ if __name__ == '__main__':
         try:
             while not stationConnected:
                 console = VantagePro(IP, PORT, ARCHIVE_INTERVAL)
-                setConsoleTime(console)
+                #setConsoleTime(console)
                 logging.warning("console connected. Getting last records...")
                 if MEASURE_NAME == 'auto' or MEASURE_NAME == 'Auto':
                     result = client.query('select * from Barometer order by time DESC limit 1')
@@ -104,8 +104,8 @@ if __name__ == '__main__':
                 logging.info("sleep for " + str(sleepSec) + " sec")
                 time.sleep(sleepSec)
         except NoDeviceException as e:
-            logging.error("Console connection lost waiting a minute and retry... " + e.message)
-            time.sleep(60)
+            logging.error("Console connection lost waiting and retry... " + e.message)
+            time.sleep(30)
             stationConnected = False
         except socket.error as e:
             logging.error("Network Connection lost " + e.message + ' retry')
