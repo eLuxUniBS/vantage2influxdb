@@ -1,0 +1,16 @@
+[Unit]
+Description=Collect weather data from a Davis Vantage Pro2 station and store them in unfluxdb via a TCP/IP connection.
+After=influxd.service
+Require=influxd.service
+
+[Service]
+Type=simple
+ExecStart=INSERT PATH
+ExecStop=/bin/kill -HUP $MAINPID
+PIDFile=/var/run/vantage2influx.pid
+TimeoutSec=300
+Restart=always
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target
